@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <include resource="logback/defaults-dev.xml"/>
+
+    <logger name="com.neyogoo.example.admin.test1.controller" additivity="true" level="${log.level.controller}">
+        <appender-ref ref="CONTROLLER_APPENDER"/>
+    </logger>
+    <logger name="com.neyogoo.example.admin.test1.service" additivity="true" level="${log.level.service}">
+        <appender-ref ref="SERVICE_APPENDER"/>
+    </logger>
+    <logger name="com.neyogoo.example.admin.test1.dao" additivity="false" level="${log.level.dao}">
+        <appender-ref ref="MAPPER_APPENDER"/>
+    </logger>
+
+</configuration>

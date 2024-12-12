@@ -1,0 +1,74 @@
+databaseName: example
+
+mode:
+    type: Standalone
+    repository:
+        type: JDBC
+
+dataSources:
+    ds_user:
+        dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        url: jdbc:mysql://10.168.2.140:3306/ds_user?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useUnicode=true&useSSL=false&autoReconnect=true&zeroDateTimeBehavior=CONVERT_TO_NULL&rewriteBatchedStatements=true&allowMultiQueries=true&nullCatalogMeansCurrent=true
+        username: example
+        password: example
+    ds_order_0:
+        dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        url: jdbc:mysql://10.168.2.140:3306/ds_order_0?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useUnicode=true&useSSL=false&autoReconnect=true&zeroDateTimeBehavior=CONVERT_TO_NULL&rewriteBatchedStatements=true&allowMultiQueries=true&nullCatalogMeansCurrent=true
+        username: example
+        password: example
+    ds_order_1:
+        dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        url: jdbc:mysql://10.168.2.140:3306/ds_order_1?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useUnicode=true&useSSL=false&autoReconnect=true&zeroDateTimeBehavior=CONVERT_TO_NULL&rewriteBatchedStatements=true&allowMultiQueries=true&nullCatalogMeansCurrent=true
+        username: example
+        password: example
+
+rules:
+- !SHARDING
+    tables:
+        # 订单表
+        t_order:
+            actualDataNodes: ds_order_${0..1}.t_order_${23..24}
+            # 分表策略
+            tableStrategy:
+                complex:
+                    shardingAlgorithmName: complex_interval_sharding_algorithm
+                    shardingColumns: order_id,create_date
+            # 分库策略
+            databaseStrategy:
+                standard:
+                    shardingColumn: user_id
+                    shardingAlgorithmName: ds_order_inline
+    # 绑定表
+    bindingTables:
+        - t_order
+    # 广播表
+    # broadcastTables:
+    #   - t_dict
+    # 分片算法
+    shardingAlgorithms:
+        ds_order_inline:
+            type: INLINE
+            props:
+                algorithm-expression: ds_order_${user_id % 2}
+        complex_interval_sharding_algorithm:
+            type: COMPLEX_INTERVAL
+            props:
+                sharding-suffix-pattern: "yy"
+                snowflake-suffix-len: 2
+- !SINGLE
+    tables:
+#        不分库分表的表在 ShardingSphere 中叫做单表
+        # MySQL 风格
+#        - ds_0.t_single # 加载指定单表
+#        - ds_1.* # 加载指定数据源中的全部单表
+        - "*.*" # 加载全部单表
+    defaultDataSource: ds_user # 默认数据源，仅在执行 CREATE TABLE 创建单表时有效。缺失值为空，表示随机单播路由。
+props:
+    sql-show: true
+
+transaction:
+    defaultType: BASE
+    providerType: Seata

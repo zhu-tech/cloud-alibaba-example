@@ -1,0 +1,13 @@
+databaseName: example
+
+mode:
+    type: Cluster
+    repository:
+        type: ZooKeeper
+        props:
+            namespace: example
+            server-lists: 10.168.2.140:2181
+            maxRetries: 100
+            retryIntervalMilliseconds: 500
+            timeToLiveSeconds: 60
+            operationTimeoutMilliseconds: 30000

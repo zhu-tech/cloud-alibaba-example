@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.neyogoo.example.admin.test1.dao.TOrderMapper">
+
+    <select id="listOrder" resultType="map">
+        SELECT
+            a.order_id,
+            a.user_id,
+            b.product_id
+        FROM
+            t_order a
+            INNER JOIN t_order_item b ON a.order_id = b.order_id
+    </select>
+
+</mapper>

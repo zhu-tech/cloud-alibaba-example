@@ -1,0 +1,4 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+    com.neyogoo.example.common.cloud.config.OpenFeignAutoConfiguration , \
+    com.neyogoo.example.common.cloud.config.RestTemplateConfiguration
+

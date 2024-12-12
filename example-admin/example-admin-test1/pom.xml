@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.neyogoo.example</groupId>
+        <artifactId>example-admin</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>example-admin-test1</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.neyogoo.example</groupId>
+            <artifactId>example-boot</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.neyogoo.example</groupId>
+            <artifactId>example-cloud</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.neyogoo.example</groupId>
+            <artifactId>example-xss</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.neyogoo.example</groupId>
+            <artifactId>example-log</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.neyogoo.example</groupId>
+            <artifactId>example-swagger</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.neyogoo.example</groupId>
+            <artifactId>example-database</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.neyogoo.example</groupId>
+            <artifactId>example-biz-common</artifactId>
+        </dependency>
+
+        <!-- 分库分表 -->
+        <dependency>
+            <groupId>org.apache.shardingsphere</groupId>
+            <artifactId>shardingsphere-jdbc-core</artifactId>
+        </dependency>
+
+        <!-- 分库分表 - zookeeper 数据源 -->
+        <dependency>
+            <groupId>org.apache.shardingsphere</groupId>
+            <artifactId>shardingsphere-cluster-mode-repository-zookeeper</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-client</artifactId>
+        </dependency>
+
+        <!-- 分库分表 - 分布式事务 -->
+        <dependency>
+            <groupId>org.apache.shardingsphere</groupId>
+            <artifactId>shardingsphere-transaction-base-seata-at</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.seata</groupId>
+            <artifactId>seata-all</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.antlr</groupId>
+                    <artifactId>antlr4-runtime</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <filters>
+            <filter>../src/main/filters/config-${profile.active}.properties</filter>
+        </filters>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <layers>
+                        <enabled>true</enabled>
+                    </layers>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>net.roseboy</groupId>
+                <artifactId>classfinal-maven-plugin</artifactId>
+                <configuration>
+                    <!-- #表示启动时不需要密码，对于代码混淆来说，这个密码没什么用，它只是一个启动密码 -->
+                    <password>#</password>
+                    <excludes>org.spring</excludes>
+                    <!-- 加密的包名，多个包用逗号分开 -->
+                    <packages>${project.groupId}</packages>
+                </configuration>
+            </plugin>
+            <!-- docker打包插件 -->
+            <plugin>
+                <groupId>com.spotify</groupId>
+                <artifactId>dockerfile-maven-plugin</artifactId>
+                <version>${dockerfile-maven-plugin.version}</version>
+                <configuration>
+                    <repository>${docker.image.prefix}/${project.artifactId}</repository>
+                    <tag>${project.version}</tag>
+                    <buildArgs>
+                        <JAR_FILE>target/${project.build.finalName}.jar</JAR_FILE>
+                    </buildArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

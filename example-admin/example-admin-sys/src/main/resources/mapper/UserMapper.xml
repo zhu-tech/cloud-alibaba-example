@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.neyogoo.example.admin.sys.dao.UserMapper">
+
+    <resultMap id="findPage_ResultMap" type="com.neyogoo.example.admin.sys.vo.response.user.UserPageRespVO">
+        <result column="user_mobile" property="userMobile" typeHandler="com.neyogoo.example.common.database.mybatis.typehandler.EncryptTypeHandler"/>
+    </resultMap>
+
+    <select id="findPage" resultMap="findPage_ResultMap">
+        SELECT
+            a.id,
+            a.user_code,
+            a.user_name,
+            a.user_mobile,
+            a.usable_flag
+        FROM
+            t_sys_user a
+        <where>
+            AND EXISTS (
+                SELECT 1 FROM r_user_org t
+                WHERE t.user_id = a.id
+                  AND t.org_id IN
+                <foreach collection="param.dataScope.orgIds" item="orgId" separator="," open="(" close=")">
+                    #{orgId}
+                </foreach>
+                  AND t.delete_flag = 0
+            )
+            <if test="param.keyword != null and param.keyword != ''">
+                AND (
+                    a.user_name LIKE CONCAT('%', #{param.keyword}, '%')
+                    OR a.user_code LIKE CONCAT('%', #{param.keyword}, '%')
+                    OR a.user_mobile LIKE CONCAT('%', #{param.keyword}, '%')
+                )
+            </if>
+            <if test="param.orgIds != null and param.orgIds.size > 0">
+                AND EXISTS (
+                    SELECT 1 FROM r_user_org t
+                    WHERE t.user_id = a.id
+                      AND t.org_id IN
+                    <foreach collection="param.orgIds" item="orgId" separator="," open="(" close=")">
+                        #{orgId}
+                    </foreach>
+                      AND t.delete_flag = 0
+                )
+            </if>
+            <if test="param.usableFlag != null">
+                AND a.usable_flag = #{param.usableFlag}
+            </if>
+            AND a.delete_flag = 0
+        </where>
+    </select>
+
+    <select id="listUserIdsWithOrgIdAndRoleId" resultType="java.lang.Long">
+        SELECT
+            DISTINCT a.id
+        FROM
+            t_sys_user a
+            INNER JOIN r_user_org b ON a.id = b.user_id AND b.delete_flag = 0
+            INNER JOIN r_user_role c ON a.id = c.user_id
+        <where>
+            AND b.org_id = #{orgId}
+            AND c.role_id = #{roleId}
+            AND a.usable_flag = 1
+            AND a.delete_flag = 0
+        </where>
+    </select>
+
+    <select id="listUsersWithScope" resultType="com.neyogoo.example.admin.sys.vo.response.user.UserListRespVO">
+        SELECT
+            a.id,
+            a.user_name,
+            GROUP_CONCAT(DISTINCT c.dept_name) AS dept_name,
+            GROUP_CONCAT(DISTINCT e.org_name) AS org_name
+        FROM
+            t_sys_user a
+            LEFT JOIN r_user_dept b ON a.id = b.user_id
+            LEFT JOIN t_sys_dept c ON c.id = b.dept_id
+            INNER JOIN r_user_org d ON a.id = d.user_id
+            INNER JOIN t_sys_org e ON e.id = d.org_id
+        <where>
+            AND a.id IN
+            <foreach collection="param.userIds" item="userId" separator="," open="(" close=")">
+                #{userId}
+            </foreach>
+            <if test="param.keyword != null and param.keyword != ''">
+            AND (
+                a.user_name LIKE CONCAT('%', #{param.keyword}, '%')
+                OR
+                c.dept_name LIKE CONCAT('%', #{param.keyword}, '%')
+            )
+            </if>
+        </where>
+        GROUP BY a.id
+    </select>
+
+    <select id="listUsersByDeptId" resultType="com.neyogoo.example.admin.sys.vo.response.user.UserListRespVO">
+        SELECT
+            a.id,
+            a.user_code,
+            a.user_name,
+            GROUP_CONCAT(DISTINCT c.dept_name) AS dept_name,
+            d.org_id,
+            e.org_name,
+            GROUP_CONCAT(DISTINCT g.role_name) AS role_name,
+            GROUP_CONCAT(DISTINCT g.sort) AS role_sort
+        FROM
+            t_sys_user a
+            INNER JOIN r_user_dept b ON a.id = b.user_id
+            INNER JOIN t_sys_dept c ON c.id = b.dept_id
+            INNER JOIN r_user_org d ON a.id = d.user_id
+            INNER JOIN t_sys_org e ON e.id = d.org_id
+            LEFT JOIN r_user_role f ON a.id = f.user_id AND f.dept_id = b.dept_id
+            LEFT JOIN t_sys_role g ON g.id = f.role_id
+        <where>
+            AND b.dept_id = #{deptId}
+            AND a.delete_flag = 0
+            AND c.usable_flag = 1
+            AND e.usable_flag = 1
+            AND c.delete_flag = 0
+            AND b.delete_flag = 0
+            AND d.delete_flag = 0
+            AND e.delete_flag = 0
+            AND f.delete_flag = 0
+            AND e.delete_flag = 0
+            AND e.usable_flag = 1
+        </where>
+        GROUP BY a.id, a.user_code, a.user_name, d.org_id, e.org_name
+    </select>
+
+    <select id="listDeptNamesByIds" resultType="com.neyogoo.example.common.core.model.Pair">
+        SELECT
+            a.id AS `key`,
+            GROUP_CONCAT(DISTINCT c.dept_name ) AS `value`
+        FROM
+            t_sys_user a
+            INNER JOIN r_user_dept b ON a.id = b.user_id
+            INNER JOIN t_sys_dept c ON c.id = b.dept_id
+        <where>
+            AND a.id IN
+            <foreach collection="userIds" item="userId" separator="," open="(" close=")">
+                #{userId}
+            </foreach>
+            AND b.delete_flag = 0
+            AND c.delete_flag = 0
+            AND c.usable_flag = 1
+        </where>
+        GROUP BY a.id
+    </select>
+
+</mapper>

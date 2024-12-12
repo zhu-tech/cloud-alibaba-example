@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.neyogoo.example</groupId>
+        <artifactId>example-biz</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>example-admin</artifactId>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>example-admin-api</module>
+        <module>example-admin-common</module>
+        <module>example-admin-sys</module>
+        <module>example-admin-test1</module>
+        <module>example-admin-test2</module>
+        <module>example-admin-test3</module>
+        <module>example-admin-test4</module>
+        <module>example-admin-test5</module>
+        <module>example-admin-test6</module>
+    </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.neyogoo.example</groupId>
+                <artifactId>example-admin-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.neyogoo.example</groupId>
+                <artifactId>example-admin-sys-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>

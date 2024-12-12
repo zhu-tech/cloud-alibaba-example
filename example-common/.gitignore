@@ -1,0 +1,9 @@
+*.iml
+.idea/
+.vscode/
+.settings/
+.classpath
+.project
+**/target/
+**/.settings/
+.scannerwork/

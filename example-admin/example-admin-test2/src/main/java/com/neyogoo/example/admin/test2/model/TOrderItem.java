@@ -1,0 +1,26 @@
+package com.neyogoo.example.admin.test2.model;
+
+import com.baomidou.mybatisplus.annotation.TableName;
+import com.neyogoo.example.common.database.model.IdEntity;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.Accessors;
+import lombok.experimental.SuperBuilder;
+
+@Getter
+@Setter
+@SuperBuilder
+@Accessors(chain = true)
+@ToString(callSuper = true)
+@NoArgsConstructor
+@TableName("t_order_item")
+public class TOrderItem extends IdEntity {
+
+    private Long orderId;
+
+    private Long productId;
+
+    private Long userId;
+}

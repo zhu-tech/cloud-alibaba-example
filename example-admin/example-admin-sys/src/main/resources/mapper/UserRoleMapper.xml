@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.neyogoo.example.admin.sys.dao.UserRoleMapper">
+
+    <sql id="Join_Part">
+        FROM t_sys_user a
+        INNER JOIN r_user_dept b ON a.id = b.user_id AND a.delete_flag = 0 AND b.delete_flag = 0
+        INNER JOIN t_sys_dept c ON c.id = b.dept_id AND c.delete_flag = 0
+        INNER JOIN r_user_role d ON a.id = d.user_id AND c.id = d.dept_id AND d.delete_flag = 0
+        INNER JOIN t_sys_role e ON e.id = d.role_id AND e.delete_flag = 0
+    </sql>
+
+    <select id="listUsableByUserId" resultType="com.neyogoo.example.admin.sys.model.UserRole">
+        SELECT
+            d.id,
+            d.user_id,
+            d.role_id,
+            d.dept_id
+        <include refid="Join_Part"/>
+        <where>
+            AND a.id = #{userId}
+            AND c.usable_flag = 1
+            AND e.usable_flag = 1
+        </where>
+    </select>
+
+    <select id="listUsableRoleIdsByUserId" resultType="java.lang.Long">
+        SELECT
+            DISTINCT e.id
+        <include refid="Join_Part"/>
+        <where>
+            AND a.id = #{userId}
+            AND c.usable_flag = 1
+            AND e.usable_flag = 1
+        </where>
+    </select>
+
+    <select id="listUsableRoleCodesByUserId" resultType="java.lang.String">
+        SELECT
+            DISTINCT e.role_code
+        <include refid="Join_Part"/>
+        <where>
+            AND a.id = #{userId}
+            AND c.usable_flag = 1
+            AND e.usable_flag = 1
+        </where>
+    </select>
+
+    <select id="listUsablePermissionCodesByUserId" resultType="java.lang.String">
+        SELECT m.menu_code FROM t_sys_menu m
+        INNER JOIN r_role_permission r ON m.id = r.permission_id AND r.permission_type = 'M'
+        WHERE m.usable_flag = 1 AND m.delete_flag = 0
+          AND r.role_id IN (
+            SELECT DISTINCT e.id
+            <include refid="Join_Part"/>
+            <where>
+                AND a.id = #{userId}
+                AND c.usable_flag = 1
+                AND e.usable_flag = 1
+            </where>
+        )
+        UNION ALL
+        SELECT s.resource_code FROM t_sys_resource s
+        INNER JOIN r_role_permission r ON s.id = r.permission_id AND s.permission_type = 'R'
+        WHERE s.usable_flag = 1 AND s.delete_flag = 0
+        AND r.role_id IN (
+            SELECT DISTINCT e.id
+            <include refid="Join_Part"/>
+            <where>
+                AND a.id = #{userId}
+                AND c.usable_flag = 1
+                AND e.usable_flag = 1
+            </where>
+        )
+    </select>
+
+    <select id="listUserIdsByDeptIdAndRoleId" resultType="java.lang.Long">
+        SELECT
+            DISTINCT a.id
+        <include refid="Join_Part"/>
+        <where>
+            AND c.id = #{deptId}
+            AND e.id = #{roleId}
+        </where>
+    </select>
+
+    <select id="listUsableUserIdsByDeptIdAndRoleId" resultType="java.lang.Long">
+        SELECT
+            DISTINCT a.id
+        <include refid="Join_Part"/>
+        <where>
+            AND c.id = #{deptId}
+            AND e.id = #{roleId}
+            AND a.usable_flag = 1
+        </where>
+    </select>
+
+    <select id="listUsableUserIdsByOrgIdAndRoleId" resultType="java.lang.Long">
+        SELECT
+            DISTINCT a.id
+        <include refid="Join_Part"/>
+        <where>
+            AND c.org_id = #{orgId}
+            AND e.id = #{roleId}
+            AND a.usable_flag = 1
+        </where>
+    </select>
+
+    <select id="listRoleNamesByUserIds" resultType="com.neyogoo.example.common.core.model.Pair">
+        SELECT
+            a.id AS `key`,
+            GROUP_CONCAT(DISTINCT e.role_name) AS `value`
+        <include refid="Join_Part"/>
+        <where>
+            AND a.id IN
+            <foreach collection="userIds" item="userId" open="(" close=")" separator="," >
+                #{userId}
+            </foreach>
+            AND c.usable_flag = 1
+            AND e.usable_flag = 1
+        </where>
+        GROUP BY a.id
+    </select>
+
+</mapper>

@@ -1,0 +1,94 @@
+databaseName: example
+
+mode:
+    type: Standalone
+    repository:
+        type: JDBC
+
+dataSources:
+    ds_user:
+        dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        url: jdbc:mysql://10.168.2.140:3306/ds_user?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useUnicode=true&useSSL=false&autoReconnect=true&zeroDateTimeBehavior=CONVERT_TO_NULL&rewriteBatchedStatements=true&allowMultiQueries=true&nullCatalogMeansCurrent=true
+        username: example
+        password: example
+    ds_order_0:
+        dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        url: jdbc:mysql://10.168.2.140:3306/ds_order_0?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useUnicode=true&useSSL=false&autoReconnect=true&zeroDateTimeBehavior=CONVERT_TO_NULL&rewriteBatchedStatements=true&allowMultiQueries=true&nullCatalogMeansCurrent=true
+        username: example
+        password: example
+    ds_order_1:
+        dataSourceClassName: com.zaxxer.hikari.HikariDataSource
+        driverClassName: com.mysql.jdbc.Driver
+        url: jdbc:mysql://10.168.2.140:3306/ds_order_1?serverTimezone=Asia/Shanghai&characterEncoding=utf8&useUnicode=true&useSSL=false&autoReconnect=true&zeroDateTimeBehavior=CONVERT_TO_NULL&rewriteBatchedStatements=true&allowMultiQueries=true&nullCatalogMeansCurrent=true
+        username: example
+        password: example
+
+rules:
+- !SHARDING
+    tables:
+        # 用户表
+        t_user:
+            actualDataNodes: ds_user.t_user
+        # 订单表
+        t_order:
+            actualDataNodes: ds_order_${0..1}.t_order_${0..1}
+            # 分表策略
+            tableStrategy:
+                standard:
+                    shardingColumn: order_id
+                    shardingAlgorithmName: t_order_inline
+            # 分库策略
+            databaseStrategy:
+                standard:
+                    shardingColumn: user_id
+                    shardingAlgorithmName: ds_order_inline
+        # 订单商品表
+        t_order_item:
+            actualDataNodes: ds_order_${0..1}.t_order_item_${0..1}
+            # 分表策略
+            tableStrategy:
+                standard:
+                    shardingColumn: order_id
+                    shardingAlgorithmName: t_order_item_inline
+            # 分库策略
+            databaseStrategy:
+                standard:
+                    shardingColumn: user_id
+                    shardingAlgorithmName: ds_order_inline
+    # 绑定表
+    bindingTables:
+        - t_order,t_order_item
+    # 广播表
+    # broadcastTables:
+    #   - t_dict
+    # 分片算法
+    shardingAlgorithms:
+        ds_order_inline:
+            type: INLINE
+            props:
+                algorithm-expression: ds_order_${user_id % 2}
+        t_order_inline:
+            type: INLINE
+            props:
+                algorithm-expression: t_order_${order_id % 2}
+        t_order_item_inline:
+            type: INLINE
+            props:
+                algorithm-expression: t_order_item_${order_id % 2}
+        alg_mod:
+            type: MOD
+            props:
+                sharding-count: 2
+        alg_hash_mod:
+            type: HASH_MOD
+            props:
+                sharding-count: 2
+
+props:
+    sql-show: true
+
+transaction:
+    defaultType: BASE
+    providerType: Seata

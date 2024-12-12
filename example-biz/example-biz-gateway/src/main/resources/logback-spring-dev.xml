@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <include resource="logback/defaults-dev.xml"/>
+
+    <logger name="com.neyogoo.example.biz.gateway.controller" additivity="true" level="${log.level.controller}">
+        <appender-ref ref="CONTROLLER_APPENDER"/>
+    </logger>
+
+</configuration>
